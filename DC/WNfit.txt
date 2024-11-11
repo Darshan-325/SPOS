@@ -1,0 +1,135 @@
+// Online Java Compiler
+// Use this editor to write, compile and run your Java code online
+
+import java.util.Scanner;
+
+// Class to store process sizes and allocation details
+class Sizes {
+    int size = 0;
+    int block_alloc = 0;
+    int index = -1;
+}
+
+public class Fitter {
+
+    // Worst-Fit allocation method
+    static void WorstFit(int blocks[], Sizes sizes[], int n, int m) {
+        int rem_size[] = new int[n];
+        System.arraycopy(blocks, 0, rem_size, 0, n);
+
+        // Allocate memory to processes using Worst-Fit strategy
+        for (int i = 0; i < m; i++) {
+            int max_ind = -1, max = -1;
+
+            for (int j = 0; j < n; j++) {
+                if (sizes[i].size <= rem_size[j]) {
+                    if (max < rem_size[j] - sizes[i].size) {
+                        max = rem_size[j] - sizes[i].size;
+                        max_ind = j;
+                    }
+                }
+            }
+
+            if (max_ind != -1) {
+                rem_size[max_ind] -= sizes[i].size;
+                sizes[i].block_alloc = blocks[max_ind];
+                sizes[i].index = max_ind;
+            }
+        }
+
+        // Print allocation details
+        printAllocation(sizes, rem_size, m);
+    }
+
+    // Next-Fit allocation method
+    static void NextFit(int blocks[], Sizes sizes[], int n, int m) {
+        int rem_size[] = new int[n];
+        System.arraycopy(blocks, 0, rem_size, 0, n);
+        int j = 0;
+
+        // Allocate memory to processes using Next-Fit strategy
+        for (int i = 0; i < m; i++) {
+            int count = 0;
+            while (count < n) {
+                if (sizes[i].size <= rem_size[j]) {
+                    rem_size[j] -= sizes[i].size;
+                    sizes[i].block_alloc = blocks[j];
+                    sizes[i].index = j;
+                    break;
+                }
+                j = (j + 1) % n;
+                count++;
+            }
+        }
+
+        // Print allocation details
+        printAllocation(sizes, rem_size, m);
+    }
+
+    // Method to print the allocation result
+    static void printAllocation(Sizes sizes[], int rem_size[], int m) {
+        System.out.println("\nProcess No.\tSize\tBlock Size\tRemaining Size");
+        for (int i = 0; i < m; i++) {
+            System.out.printf("%6d%13d%10d", i + 1, sizes[i].size, sizes[i].block_alloc);
+            if (sizes[i].block_alloc == 0) {
+                System.out.println("\t\tNo Block Allocated");
+            } else {
+                System.out.printf("%15d\n", rem_size[sizes[i].index]);
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        // Input number of blocks
+        System.out.print("Enter the number of blocks: ");
+        int n = sc.nextInt();
+        int blocks[] = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            System.out.print("Enter size of block " + (i + 1) + ": ");
+            blocks[i] = sc.nextInt();
+        }
+
+        // Input number of processes
+        System.out.print("\nEnter the number of processes: ");
+        int m = sc.nextInt();
+        Sizes sizes[] = new Sizes[m];
+
+        for (int i = 0; i < m; i++) {
+            sizes[i] = new Sizes();
+            System.out.print("Enter size of process " + (i + 1) + ": ");
+            sizes[i].size = sc.nextInt();
+        }
+
+        // Menu-driven loop
+        int ch;
+        do {
+            System.out.println("\nChoose an allocation method:");
+            System.out.println("1. Worst-Fit");
+            System.out.println("2. Next-Fit");
+            System.out.println("3. Exit");
+            System.out.print("Enter your choice: ");
+            ch = sc.nextInt();
+
+            switch (ch) {
+                case 1:
+                    System.out.println("\nUsing Worst-Fit Allocation:");
+                    WorstFit(blocks, sizes, n, m);
+                    break;
+                case 2:
+                    System.out.println("\nUsing Next-Fit Allocation:");
+                    NextFit(blocks, sizes, n, m);
+                    break;
+                case 3:
+                    System.out.println("Exiting... Goodbye!");
+                    break;
+                default:
+                    System.out.println("Invalid choice! Please try again.");
+            }
+        } while (ch != 3);
+
+        sc.close();
+}
+}

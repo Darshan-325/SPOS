@@ -1,0 +1,177 @@
+import java.util.Scanner;
+
+// Class to implement FIFO page replacement algorithm
+class FIFO {
+    private int front = -1;
+    private int rear = -1;
+    private int arr[];
+
+    FIFO(int n) {
+        arr = new int[n];
+        for (int i = 0; i < n; i++) arr[i] = -1;
+    }
+
+    boolean isEmpty() {
+        return front == -1;
+    }
+
+    boolean isFull() {
+        return (rear + 1) % arr.length == front;
+    }
+
+    void enqueue(int ele) {
+        if (!isFull()) {
+            if (front == -1) front = 0;
+            rear = (rear + 1) % arr.length;
+            arr[rear] = ele;
+        }
+    }
+
+    int dequeue() {
+        if (!isEmpty()) {
+            int temp = arr[front];
+            if (front == rear) {
+                front = rear = -1;
+            } else {
+                front = (front + 1) % arr.length;
+            }
+            return temp;
+        }
+        return -1;
+    }
+
+    boolean search(int ele) {
+        for (int i : arr) if (i == ele) return true;
+        return false;
+    }
+
+    void display() {
+        for (int i = 0; i < arr.length; i++) {
+            System.out.printf("%3d", arr[i]);
+        }
+        System.out.println();
+    }
+}
+
+public class PageReplacement {
+    // Method to display the LRU array
+    static void display(int lru[]) {
+        for (int i : lru) System.out.printf("%3d", i);
+        System.out.println();
+    }
+
+    // Method to search if an element exists in LRU array
+    static boolean search(int lru[], int e) {
+        for (int i : lru) if (i == e) return true;
+        return false;
+    }
+
+    // Method to find the least recently used element's index
+    static int findLRU(int lru[], int pages[], int ind) {
+        int maxDist = 0, maxIndex = 0;
+        for (int i = 0; i < lru.length; i++) {
+            int j;
+            for (j = ind - 1; j >= 0; j--) {
+                if (lru[i] == pages[j]) {
+                    if (maxDist < ind - j) {
+                        maxDist = ind - j;
+                        maxIndex = i;
+                    }
+                    break;
+                }
+            }
+            if (j == -1) return i;
+        }
+        return maxIndex;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter the size of the frame: ");
+        int size = sc.nextInt();
+
+        System.out.print("Enter the number of pages: ");
+        int n = sc.nextInt();
+        int pages[] = new int[n];
+
+        System.out.println("Enter the pages:");
+        for (int i = 0; i < n; i++) {
+            pages[i] = sc.nextInt();
+        }
+
+        int hit = 0;
+        int ch;
+
+        do {
+            System.out.println("\n---------MENU---------");
+            System.out.println("1. FIFO");
+            System.out.println("2. LRU");
+            System.out.println("3. Exit");
+            System.out.print("Enter your choice: ");
+            ch = sc.nextInt();
+
+            switch (ch) {
+                case 1: {
+                    FIFO queue = new FIFO(size);
+                    hit = 0;
+
+                    System.out.println("\nFIFO Page Replacement:");
+                    for (int i = 0; i < n; i++) {
+                        if (queue.search(pages[i])) {
+                            hit++;
+                        } else {
+                            if (queue.isFull()) queue.dequeue();
+                            queue.enqueue(pages[i]);
+                        }
+                        queue.display();
+                    }
+                    System.out.println("Total Hits: " + hit);
+                    System.out.println("Total Faults: " + (n - hit));
+                    break;
+                }
+
+                case 2: {
+                    int lru[] = new int[size];
+                    for (int i = 0; i < size; i++) lru[i] = -1;
+                    hit = 0;
+
+                    System.out.println("\nLRU Page Replacement:");
+                    int i = 0;
+                    for (; i < size && i < n; i++) {
+                        if (!search(lru, pages[i])) {
+                            lru[i] = pages[i];
+                            display(lru);
+                        } else {
+                            hit++;
+                        }
+                    }
+
+                    for (; i < n; i++) {
+                        if (!search(lru, pages[i])) {
+                            int lruIndex = findLRU(lru, pages, i);
+                            lru[lruIndex] = pages[i];
+                        } else {
+                            hit++;
+                        }
+                        display(lru);
+                    }
+
+                    System.out.println("Total Hits: " + hit);
+                    System.out.println("Total Faults: " + (n - hit));
+                    break;
+                }
+
+                case 3:
+                    System.out.println("Exiting... Goodbye!");
+                    break;
+
+                default:
+                    System.out.println("Invalid choice! Please try again.");
+                    break;
+            }
+        } while (ch != 3);
+
+        sc.close();
+}
+}

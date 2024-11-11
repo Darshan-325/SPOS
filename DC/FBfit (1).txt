@@ -1,0 +1,125 @@
+// Online Java Compiler
+// Use this editor to write, compile and run your Java code online
+
+import java.util.Scanner;
+
+// Class to store process sizes and allocation details
+class Sizes {
+    int size = 0;           // Size of the process
+    int block_alloc = 0;    // Block size allocated to this process
+    int index = -1;         // Index of the block assigned
+}
+
+public class Fitter {
+
+    // First-Fit allocation method
+    static void FirstFit(int blocks[], Sizes sizes[], int n, int m) {
+        int rem_size[] = new int[n];
+        System.arraycopy(blocks, 0, rem_size, 0, n);
+
+        // Allocate memory to processes using First-Fit strategy
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (sizes[i].size <= rem_size[j]) {
+                    rem_size[j] -= sizes[i].size;
+                    sizes[i].block_alloc = blocks[j];
+                    sizes[i].index = j;
+                    break; // Stop looking after allocating the process
+                }
+            }
+        }
+        printAllocation(sizes, rem_size, m);
+    }
+
+    // Best-Fit allocation method
+    static void BestFit(int blocks[], Sizes sizes[], int n, int m) {
+        int rem_size[] = new int[n];
+        System.arraycopy(blocks, 0, rem_size, 0, n);
+
+        // Allocate memory to processes using Best-Fit strategy
+        for (int i = 0; i < m; i++) {
+            int min_ind = -1, min = Integer.MAX_VALUE;
+            for (int j = 0; j < n; j++) {
+                if (sizes[i].size <= rem_size[j] && (rem_size[j] - sizes[i].size < min)) {
+                    min = rem_size[j] - sizes[i].size;
+                    min_ind = j;
+                }
+            }
+            if (min_ind != -1) {
+                rem_size[min_ind] -= sizes[i].size;
+                sizes[i].block_alloc = blocks[min_ind];
+                sizes[i].index = min_ind;
+            }
+        }
+        printAllocation(sizes, rem_size, m);
+    }
+
+    // Method to print the allocation result
+    static void printAllocation(Sizes sizes[], int rem_size[], int m) {
+        System.out.println("\nProcess No.\tSize\tBlock Size\tRemaining Size");
+        for (int i = 0; i < m; i++) {
+            System.out.printf("%6d%13d%10d", i + 1, sizes[i].size, sizes[i].block_alloc);
+            if (sizes[i].block_alloc == 0) {
+                System.out.printf("\t\tNo Block Allocated\n");
+            } else {
+                System.out.printf("%15d\n", rem_size[sizes[i].index]);
+            }
+        }
+    }
+
+    // Main method to run the program
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        // Input number of blocks
+        System.out.print("Enter number of blocks: ");
+        int n = sc.nextInt();
+        int blocks[] = new int[n];
+        System.out.println("Enter sizes of the blocks:");
+        for (int i = 0; i < n; i++) {
+            blocks[i] = sc.nextInt();
+        }
+
+        // Input number of processes
+        System.out.print("Enter number of processes: ");
+        int m = sc.nextInt();
+        Sizes sizes[] = new Sizes[m];
+        for (int i = 0; i < m; i++) {
+            sizes[i] = new Sizes();
+        }
+
+        System.out.println("Enter sizes of the processes:");
+        for (int i = 0; i < m; i++) {
+            sizes[i].size = sc.nextInt();
+        }
+
+        // Menu-driven loop for choosing allocation methods
+        while (true) {
+            System.out.println("\nChoose an allocation method:");
+            System.out.println("1. First-Fit");
+            System.out.println("2. Best-Fit");
+            System.out.println("3. Exit");
+
+            System.out.print("Enter your choice: ");
+            int ch = sc.nextInt();
+
+            switch (ch) {
+                case 1:
+                    System.out.println("\nUsing First-Fit Allocation:");
+                    FirstFit(blocks, sizes, n, m);
+                    break;
+                case 2:
+                    System.out.println("\nUsing Best-Fit Allocation:");
+                    BestFit(blocks, sizes, n, m);
+                    break;
+                case 3:
+                    System.out.println("Exiting... Goodbye!");
+                    sc.close();
+                    System.exit(0); // Exit the program
+                    break;
+                default:
+                    System.out.println("Invalid choice! Please try again.");
+            }
+ }
+}
+}
